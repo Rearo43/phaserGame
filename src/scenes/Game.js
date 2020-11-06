@@ -8,21 +8,25 @@ export default class Game extends Phaser.Scene {
   }
   player;
   platforms;
+  cursors;
   preload() {
     this.load.image('background', 'assets/bg_layer1.png');
 
     this.load.image('platform', 'assets/ground_grass.png');
 
     this.load.image('player-stand', 'assets/bunny1_stand.png');
+
+    //May move to create()??
+    this.cursors = this.input.keyboard.createCursorKeys();
   }
 
   create() {
-    this.add.image(240, 320, 'background');
+    this.add.image(240, 320, 'background').setScrollFactor(1, 0);
 
     this.platforms = this.physics.add.staticGroup();
 
     for (let i = 0; i < 5; i++) {
-      const x = Phaser.Math.Between(80, 400);
+      const x = Phaser.Math.Between(80, 400);x
       const y = 150 * i;
       const platform = this.platforms.create(x, y, 'platform');
 
@@ -44,6 +48,7 @@ export default class Game extends Phaser.Scene {
 
     this.cameras.main.startFollow(this.player);
   }
+
   update() {
     this.platforms.children.iterate((child) => {
       const platform = child;
@@ -54,11 +59,21 @@ export default class Game extends Phaser.Scene {
         platform.body.updateFromGameObject();
       }
     });
-    
+
     const makeContact = this.player.body.touching.down;
 
     if (makeContact) {
       this.player.setVelocityY(-300);
+    }
+
+    if(this.cursors.left.isDown && !makeContact) {
+        this.player.setVelocityX(-200);
+    }
+    else if(this.cursors.right.isDown && !makeContact) {
+        this.player.setVelocityX(200);
+    }
+    else {
+        this.player.setVelocityX(0)
     }
   }
 }
