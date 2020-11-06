@@ -26,7 +26,8 @@ export default class Game extends Phaser.Scene {
     this.platforms = this.physics.add.staticGroup();
 
     for (let i = 0; i < 5; i++) {
-      const x = Phaser.Math.Between(80, 400);x
+      const x = Phaser.Math.Between(80, 400);
+      x;
       const y = 150 * i;
       const platform = this.platforms.create(x, y, 'platform');
 
@@ -47,6 +48,8 @@ export default class Game extends Phaser.Scene {
     this.player.body.checkCollision.right = false;
 
     this.cameras.main.startFollow(this.player);
+
+    this.cameras.main.setDeadzone(this.scale.width * 1.5);
   }
 
   update() {
@@ -66,14 +69,26 @@ export default class Game extends Phaser.Scene {
       this.player.setVelocityY(-300);
     }
 
-    if(this.cursors.left.isDown && !makeContact) {
-        this.player.setVelocityX(-200);
+    if (this.cursors.left.isDown && !makeContact) {
+      this.player.setVelocityX(-200);
+    } else if (this.cursors.right.isDown && !makeContact) {
+      this.player.setVelocityX(200);
+    } else {
+      this.player.setVelocityX(0);
     }
-    else if(this.cursors.right.isDown && !makeContact) {
-        this.player.setVelocityX(200);
-    }
-    else {
-        this.player.setVelocityX(0)
+
+    this.horizontalWrap(this.player);
+  }
+
+  horizontalWrap(sprite) {
+    const halfWidth = sprite.displayWidth * 0.5;
+    const gameWidth = this.scale.width;
+    const addWidth = gameWidth + halfWidth;
+
+    if (sprite.x < -halfWidth) {
+      sprite.x = addWidth;
+    } else if (sprite.x > addWidth) {
+        sprite.x = -halfWidth;
     }
   }
 }
