@@ -2,19 +2,25 @@
 
 import Phaser from '../lib/phaser.js';
 
+import Carrot from '../game/Carrot.js'
+
 export default class Game extends Phaser.Scene {
   constructor() {
     super('game');
   }
   player;
   platforms;
+  carrots;
   cursors;
+
   preload() {
     this.load.image('background', 'assets/bg_layer1.png');
 
     this.load.image('platform', 'assets/ground_grass.png');
 
     this.load.image('player-stand', 'assets/bunny1_stand.png');
+    
+    this.load.image('carrot', 'assets/carrot.png');
 
     //May move to create()??
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -50,6 +56,17 @@ export default class Game extends Phaser.Scene {
     this.cameras.main.startFollow(this.player);
 
     this.cameras.main.setDeadzone(this.scale.width * 1.5);
+
+    //THIS CODE JUST ADDS ONE CARROT TO GAME (MIDDLE OF SCREEN)
+    // const newCarrot = new Carrot (this, 240, 320, 'carrot');
+    // this.add.existing(newCarrot);
+
+    this.carrots = this.physics.add.group({
+      classType: Carrot
+    })
+
+    this.carrots.get(240, 320, 'carrot');
+
   }
 
   update() {
