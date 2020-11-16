@@ -2,17 +2,20 @@
 
 import Phaser from '../lib/phaser.js';
 
-import Carrot from '../game/Carrot.js';
+import Gem from '../game/gem.js';
 
 export default class Game extends Phaser.Scene {
   pointsCollected = 0;
-  pointsCounterText; 
+  pointsCounterText;
   constructor() {
     super('game');
   }
+  init() {
+    this.pointsCollected = 0;
+  }
   player;
   platforms;
-  carrots;
+  gems;
   cursors;
 
   preload() {
@@ -24,8 +27,10 @@ export default class Game extends Phaser.Scene {
     // this.load.image('player-stand', 'assets/bunny1_stand.png');
     this.load.image('player-stand', 'assets/alienGreen_swim2.png');
 
-    // this.load.image('carrot', 'assets/carrot.png');
-    this.load.image('carrot', 'assets/ball_basket4.png');
+    this.load.image('player-jump', 'assets/alienGreen_jump.png');
+
+    // this.load.image('gem', 'assets/carrot.png');
+    this.load.image('gem', 'assets/ball_basket4.png');
 
     //May move to create()??
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -62,21 +67,21 @@ export default class Game extends Phaser.Scene {
     this.cameras.main.setDeadzone(this.scale.width * 1.5);
 
     //THIS CODE JUST ADDS ONE CARROT TO GAME (MIDDLE OF SCREEN)
-    // const newCarrot = new Carrot (this, 240, 320, 'carrot');
+    // const newCarrot = new Gem (this, 240, 320, 'gem');
     // this.add.existing(newCarrot);
 
-    this.carrots = this.physics.add.group({
-      classType: Carrot,
+    this.gems = this.physics.add.group({
+      classType: Gem,
     });
 
     //TEST CARROT
-    // this.carrots.get(240, 320, 'carrot');
+    // this.gems.get(240, 320, 'gem');
 
-    this.physics.add.collider(this.platforms, this.carrots);
+    this.physics.add.collider(this.platforms, this.gems);
 
     this.physics.add.overlap(
       this.player,
-      this.carrots,
+      this.gems,
       this.handleCollect,
       undefined,
       this
@@ -98,7 +103,8 @@ export default class Game extends Phaser.Scene {
         platform.y = scrollY - Phaser.Math.Between(50, 100);
         platform.body.updateFromGameObject();
 
-        this.addCarrotAbove(platform);
+        this.addGem(platform);
+        this.addGem(platform);
       }
     });
 
@@ -106,6 +112,14 @@ export default class Game extends Phaser.Scene {
 
     if (makeContact) {
       this.player.setVelocityY(-300);
+
+      this.player.setTexture('player-jump');
+    }
+
+    const vy = this.player.body.velocity.y;
+
+    if (vy > 0 && this.player.texture.key !== 'player-stand') {
+      this.player.setTexture('player-stand');
     }
 
     if (this.cursors.left.isDown && !makeContact) {
@@ -120,8 +134,9 @@ export default class Game extends Phaser.Scene {
 
     const lastPlatform = this.gameOver();
 
-    if(this.player.y > lastPlatform.y + 500) {
-      console.log('GAME OVER');
+    if (this.player.y > lastPlatform.y + 500) {
+      // console.log('GAME OVER');
+      this.scene.start('game-over');
     }
   }
 
@@ -137,25 +152,41 @@ export default class Game extends Phaser.Scene {
     }
   }
 
-  addCarrotAbove(sprite) {
+  addGem(sprite) {
     const y = sprite.y - sprite.displayHeight;
-    const carrot = this.carrots.get(sprite.x, y, 'carrot');
+    const gem = this.gems.get(sprite.x, y, 'gem');
 
-    carrot.setActive(true);
-    carrot.setVisible(true);
+    gem.setActive(true);
+    gem.setVisible(true);
 
-    this.add.existing(carrot);
+    this.add.existing(gem);
 
-    // carrot.body.setSize(carrot.width, carrot.height);
+    // gem.body.setSize(gem.width, gem.height);
 
-    this.physics.world.enable(carrot);
+    this.physics.world.enable(gem);
 
-    return carrot;
+    return gem;
   }
 
-  handleCollect(player, carrot) {
-    this.carrots.killAndHide(carrot);
-    this.physics.world.disableBody(carrot.body);
+  addLetter(sprite) {
+    const y = sprite.y - sprite.displayHeight;
+    const gem = this.gems.get(sprite.x, y, handleCollect);
+
+    gem.setActive(true);
+    gem.setVisible(true);
+
+    this.add.existing(gem);
+
+    // gem.body.setSize(gem.width, gem.height);
+
+    this.physics.world.enable(gem);
+
+    return gem;
+  }
+
+  handleCollect(player, gem) {
+    this.gems.killAndHide(gem);
+    this.physics.world.disableBody(gem.body);
 
     this.pointsCollected++;
     // console.log(this.pointsCollected);
@@ -171,14 +202,14 @@ export default class Game extends Phaser.Scene {
     const platform = this.platforms.getChildren();
     let lastPlatform = platform[0];
 
-    for(let i = 0; i < this.platforms.length; i++) {
+    for (let i = 0; i < this.platforms.length; i++) {
       const platform = this.platforms[i];
 
-      if(this.platform.y < lastPlatform.y) {
+      if (this.platform.y < lastPlatform.y) {
         continue;
       }
 
-      lastPlatform = this.platform
+      lastPlatform = this.platform;
     }
     return lastPlatform;
   }
